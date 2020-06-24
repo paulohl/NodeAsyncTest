@@ -1,41 +1,35 @@
-import async from "async";
+const fs = require('fs');
+const data = {'data': 'data'};
+const result = {'result': 'result'};
 
-// directory name should be same js file name
-import test_function1 from "test_function1";
-import test_function2 from "test_function2";
-import test_function3 from "test_function3";
-import test_function4 from "test_function4";
-import test_function5 from "test_function5";
+const readFileNames = (dirname) => {
+  return new Promise((resolve, reject) => {
+    fs.readdir(dirname, function(err, filenames) {
+      if (err) {
+        reject(err);
+        return;
+      }
+      resolve(filenames);
+    });
+  });
+}
 
-async function main_function() {
-	
-	let promise1 = new Promise((resolve, reject) => {
-		setTimeout(() => resolve(test_function1()), 1000);
-	})
-	let result1 = await promise1;
-
-	let promise2 = new Promise((resolve, reject) => {
-		setTimeout(() => resolve(test_function2()), 1000);
-	})
-	let result2 = await promise2;
-
-	let promise3 = new Promise((resolve, reject) => {
-		setTimeout(() => resolve(test_function3()), 1000);
-	})
-	let result3 = await promise3;
-
-	let promise4 = new Promise((resolve, reject) => {
-		setTimeout(() => resolve(test_function4()), 1000);
-	})
-	let result4 = await promise4;
-
-	let promise5 = new Promise((resolve, reject) => {
-		setTimeout(() => resolve(test_function5()), 1000);
-	})
-	let result5 = await promise5;
-
-	// result: You can see alert all sums after 5 seconds
-	alert(result1 + result2 + result3 + result4 + result5);
-} 
-
-main_function();
+(() => {
+    const folders = ['folder1', 'folder2', 'folder3'];
+    folders.forEach(async (dirname) => {
+      const filenames = await readFileNames(dirname);
+      await Promise.all(filenames.map(file => {
+        return new Promise(async (resolve, reject) => {
+          try {
+            const path = './' + dirname + '/' + file;
+            let func = require(path);
+            result['result'] = path;
+            func(data, result);
+            resolve();
+          } catch (e) {
+            reject(e);
+          }
+        });
+      }))
+    });
+})();
